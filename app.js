@@ -533,16 +533,34 @@ async function processUniversalVoiceCommand(phrase) {
     }
 }
 
-/* TACHAR TEXTO CON LÍNEA CONTINUA REAL */
+/* TACHAR TEXTO AUTOMÁTICO SIN OBLIGAR A SELECCIONAR CON EL DEDO */
 function toggleStrikethroughNote() {
     triggerHaptic();
-    document.execCommand('strikeThrough', false, null);
+    const area = document.getElementById('tab-day-notes');
+    const sel = window.getSelection();
+
+    if (sel.rangeCount > 0 && sel.toString().trim() !== '') {
+        document.execCommand('strikeThrough', false, null);
+    } else {
+        // Si no hay texto resaltado, conmuta el tachado completo de la nota
+        const isTached = area.classList.contains('note-strike-txt');
+        if (isTached) {
+            area.classList.remove('note-strike-txt');
+            area.querySelectorAll('strike, s, del').forEach(el => {
+                el.outerHTML = el.innerHTML;
+            });
+        } else {
+            area.classList.add('note-strike-txt');
+        }
+    }
     saveTabNotes();
 }
 
 async function clearTabNotes() {
     if (confirm("¿Quieres borrar toda la nota de este día?")) {
-        document.getElementById('tab-day-notes').innerHTML = '';
+        const area = document.getElementById('tab-day-notes');
+        area.innerHTML = '';
+        area.classList.remove('note-strike-txt');
         await db.notes.delete(selectedDateStr);
         await initCalendar();
     }
@@ -898,7 +916,6 @@ async function renderDayTasksList() {
     await updateTaskProgress();
 }
 
-/* PROMPT RÁPIDO PARA ASIGNAR HORA DE ALARMA DESDE TAREAS/PLANTILLAS */
 async function setTaskTimePrompt(todoId, title, currentTime) {
     const timeStr = prompt(`⏰ Asignar hora de alarma para:\n"${title}"`, currentTime || "09:00");
     if (!timeStr) return;
@@ -992,6 +1009,7 @@ async function saveTabNotes() {
     } else {
         await db.notes.put({ dateKey: selectedDateStr, html: htmlContent, text: plainText });
     }
+    await renderCalSelectedEvents();
     await initCalendar();
 }
 
@@ -1119,9 +1137,11 @@ async function changeMonth(dir) {
     await renderCalSelectedEvents();
 }
 
+/* REDIBUJO LIMPIO SIN DUPLICAR CUADRICULA DEL CALENDARIO */
 async function initCalendar() {
     const grid = document.getElementById('calendar-grid');
-    grid.innerHTML = '';
+    grid.innerHTML = ''; // Limpieza total garantizada
+    
     const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
     document.getElementById('calendar-month-year').innerText = `${months[currentMonth]} ${currentYear}`;
 
@@ -1178,9 +1198,7 @@ async function initCalendar() {
             const eventsInDay = dayEvents.length;
             const noteInDay = hasNote;
 
-            if (tasksInDay > 0 || eventsInDay > 0 || noteInDay) {
-                // Mantiene vista para consulta
-            } else {
+            if (tasksInDay === 0 && eventsInDay === 0 && !noteInDay) {
                 openDayModalForSelectedDate();
             }
         };
@@ -1188,34 +1206,57 @@ async function initCalendar() {
     }
 }
 
+/* RENDERIZADO FIDEDIGNO DE NOTAS CON FORMATO TACHADO EN DETALLES DEL CALENDARIO */
 async function renderCalSelectedEvents() {
     const container = document.getElementById('cal-selected-events-list');
     container.innerHTML = '';
     const dayEvents = await db.events.where('date').equals(selectedDateStr).toArray();
+    const noteRecord = await db.notes.get(selectedDateStr);
 
-    if (dayEvents.length === 0) {
-        container.innerHTML = '<div class="empty-hint">Sin eventos ni alertas para esta fecha.</div>';
-        return;
+    let hasItems = false;
+
+    if (dayEvents.length > 0) {
+        hasItems = true;
+        dayEvents.forEach(ev => {
+            const div = document.createElement('div');
+            div.className = `event-card ${ev.done ? 'done' : ''}`;
+            div.innerHTML = `
+                <input type="checkbox" class="todo-checkbox" ${ev.done ? 'checked' : ''} onchange="triggerHaptic(); toggleEventDone('${ev.id}', ${ev.done});">
+                <div class="event-dot" style="background:var(--color-${ev.priority});"></div>
+                <div class="event-info">
+                    <div class="event-time">
+                        ${ev.time !== '--:--' ? ev.time : 'Solo Ubicación'}
+                        <button class="btn-reminder" onclick="triggerHaptic(); setTaskTimePrompt('${ev.id}', '${ev.title}', '${ev.time}');">🔔 Recordar</button>
+                    </div>
+                    <div class="event-title-txt">${ev.title}</div>
+                    ${ev.details ? `<div class="event-desc-txt">${ev.details}</div>` : ''}
+                </div>
+                <button class="event-del" onclick="triggerHaptic(); deleteEvent('${ev.id}');">✕</button>
+            `;
+            container.appendChild(div);
+        });
     }
 
-    dayEvents.forEach(ev => {
-        const div = document.createElement('div');
-        div.className = `event-card ${ev.done ? 'done' : ''}`;
-        div.innerHTML = `
-            <input type="checkbox" class="todo-checkbox" ${ev.done ? 'checked' : ''} onchange="triggerHaptic(); toggleEventDone('${ev.id}', ${ev.done});">
-            <div class="event-dot" style="background:var(--color-${ev.priority});"></div>
+    if (noteRecord && (noteRecord.html || noteRecord.text)) {
+        hasItems = true;
+        const noteDiv = document.createElement('div');
+        noteDiv.className = 'event-card card-note';
+        const displayContent = noteRecord.html || noteRecord.text;
+        
+        noteDiv.innerHTML = `
+            <div class="event-dot" style="background:var(--color-note);"></div>
             <div class="event-info">
-                <div class="event-time">
-                    ${ev.time !== '--:--' ? ev.time : 'Solo Ubicación'}
-                    <button class="btn-reminder" onclick="triggerHaptic(); setTaskTimePrompt('${ev.id}', '${ev.title}', '${ev.time}');">🔔 Recordar</button>
-                </div>
-                <div class="event-title-txt">${ev.title}</div>
-                ${ev.details ? `<div class="event-desc-txt">${ev.details}</div>` : ''}
+                <div class="event-time">🟠 Nota del Día</div>
+                <div class="event-title-txt" style="font-weight: normal; margin-top: 4px;">${displayContent}</div>
             </div>
-            <button class="event-del" onclick="triggerHaptic(); deleteEvent('${ev.id}');">✕</button>
+            <button class="event-del" onclick="triggerHaptic(); clearTabNotes();">✕</button>
         `;
-        container.appendChild(div);
-    });
+        container.appendChild(noteDiv);
+    }
+
+    if (!hasItems) {
+        container.innerHTML = '<div class="empty-hint">Sin eventos ni notas anotadas para esta fecha.</div>';
+    }
 }
 
 async function toggleEventDone(id, currentDone) {
