@@ -269,7 +269,6 @@
         .auto-expand-textarea { resize: none; overflow-y: hidden; min-height: 48px; line-height: 1.4; font-family: inherit; }
         .notes-card-container { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
         
-        /* ÁREA EDITABLE CON RENDERIZADO VISUAL DE TEXTO TACHADO REAL */
         .notes-editable-area {
             background: var(--bg-card); border: 1px solid rgba(128,128,128,0.15);
             color: var(--text-main); padding: 14px; border-radius: 12px; outline: none;
@@ -277,8 +276,8 @@
             line-height: 1.5; white-space: pre-wrap; overflow-y: auto;
         }
         .notes-editable-area:focus { border-color: var(--accent); }
-        .notes-editable-area strike, .notes-editable-area s, .notes-editable-area del {
-            text-decoration: line-through; opacity: 0.6; color: var(--text-muted);
+        .notes-editable-area strike, .notes-editable-area s, .notes-editable-area del, .note-strike-txt {
+            text-decoration: line-through !important; opacity: 0.65; color: var(--text-muted);
         }
 
         .priority-chips { display: flex; gap: 8px; }
