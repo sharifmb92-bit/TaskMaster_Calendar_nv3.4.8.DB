@@ -2,13 +2,13 @@
 const config = { version: '3.4.8', sysSignature: 'medbasha' };
 
 const firebaseConfig = {
-    apiKey: "AIzaSyC7b6_T0ze2HgXiYHfvUeL12JSXE7ZKogc",
-    authDomain: "misturnos-fe3ea.firebaseapp.com",
-    databaseURL: "https://misturnos-fe3ea-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "misturnos-fe3ea",
-    storageBucket: "misturnos-fe3ea.firebasestorage.app",
-    messagingSenderId: "1029095925443",
-    appId: "1:1029095925443:web:873240d85ac5160f392476"
+    apiKey: "AIzaSyAelzQOy8KFQ5OZkctKJS2DZUaxvaLMfRE",
+    authDomain: "taskmastercalendar-a779e.firebaseapp.com",
+    databaseURL: "https://taskmastercalendar-a779e-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "taskmastercalendar-a779e",
+    storageBucket: "taskmastercalendar-a779e.firebasestorage.app",
+    messagingSenderId: "628005433300",
+    appId: "1:628005433300:web:b6a39ed06922a34de07041"
 };
 const vapidKey = "BGClAqG08mtup_uhnNeCjWeJdZfLU-pnmrEpfXbkKf6uVTRjAAdu-4PO1ASiuA-UOvyXvBiswDxpauthHiGw37I";
 
