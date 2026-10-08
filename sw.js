@@ -2,15 +2,15 @@
 importScripts('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js');
 
-// Configuración de Firebase para segundo plano
+// Configuración de Firebase propia de TU PROYECTO TaskMaster
 firebase.initializeApp({
-  apiKey: "AIzaSyC7b6_T0ze2HgXiYHfvUeL12JSXE7ZKogc",
-  authDomain: "misturnos-fe3ea.firebaseapp.com",
-  databaseURL: "https://misturnos-fe3ea-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "misturnos-fe3ea",
-  storageBucket: "misturnos-fe3ea.firebasestorage.app",
-  messagingSenderId: "1029095925443",
-  appId: "1:1029095925443:web:45177773f7378ac7392476"
+  apiKey: "AIzaSyAelzQOy8KFQ5OZkctKJS2DZUaxvaLMfRE",
+  authDomain: "taskmastercalendar-a779e.firebaseapp.com",
+  databaseURL: "https://taskmastercalendar-a779e-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "taskmastercalendar-a779e",
+  storageBucket: "taskmastercalendar-a779e.firebasestorage.app",
+  messagingSenderId: "628005433300",
+  appId: "1:628005433300:web:b6a39ed06922a34de07041"
 });
 
 const messaging = firebase.messaging();
@@ -62,7 +62,7 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Ignorar peticiones a Firebase / CDNs externas para no interferir con las llamadas a la nube
+  // Ignorar peticiones a Firebase / CDNs externas para no interferir con la nube
   if (!event.request.url.startsWith(self.location.origin)) {
     return;
   }
